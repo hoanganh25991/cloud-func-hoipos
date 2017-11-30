@@ -1,29 +1,38 @@
+import axios from "axios"
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const _ = console.log
 
+const _ = console.log
+axios.defaults.timeout = 2000
 admin.initializeApp(functions.config().firebase);
 
-export const callUploadOrder = functions.database.ref('/tmp/{outletId}/{orderId}').onWrite(event => {
-  // Check if should handle event
-  const {outletId, orderId} = event.params
-  _("[ouletId, orderId]", outletId, orderId)
+/**
+ * Call save orders in hoipos backend
+ * To save it to MySQl db
+ * @type {*|CloudFunction<DeltaSnapshot>}
+ */
+export const callUploadOrder = functions.database.ref('/tmp/{outletBr}/{orderBr}').onWrite(async event => {
   _("[event data]", event.data.val())
 
-
-  const matchOrderBrand = outletId.match(/^.+(\d+)_orders$/)
-  const matchOrderX     = orderId.match(/^order_(\d+)/)
-
-  const shouldHandle = matchOrderBrand && matchOrderX
-
+  // Check if should handle event
+  const {outletBr, orderBr} = event.params
+  _("[ouletId, orderBr]", outletBr, orderBr)
+  const matchOutletBr = outletBr.match(/^.+(\d+)_orders$/)
+  const matchOrderX   = orderBr.match(/^order_(\d+)/)
+  const shouldHandle  = matchOutletBr && matchOrderX && true
+  _("[shouldHandle]", shouldHandle)
   if(!shouldHandle) return null
 
-  _("[shouldHandle]", shouldHandle)
-
+  // Call hoipos-backend > uploadOrders API
   const orderData = event.data.val()
   _("[orderData]", orderData)
+  const outlet_id = +matchOutletBr[1]
 
-  // Call hoipos-backend > uploadOrders API
+  const res = await axios.post("", {
+    type:"SAVE_ORDERS",
+    orders:[orderData],
+    outlet_id
+  })
 
   return null
 });
