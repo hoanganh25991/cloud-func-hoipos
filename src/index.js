@@ -1,8 +1,7 @@
-import functions from "firebase-functions"
-import admin from "firebase-admin"
-import config from "service-account.json"
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 
-admin.initializeApp(config);
+admin.initializeApp(functions.config().firebase);
 
 export const callUploadOrder = functions.database.ref('/tmp').onWrite(event => {
   console.log("[event data]", event.data.val())
