@@ -41,5 +41,7 @@ export const callUploadOrder = functions.database.ref("/tmp/{outletBr}/{orderBr}
     outlet_id
   })
 
+  _("[res.data]", res.data)
+
   return null
 })
