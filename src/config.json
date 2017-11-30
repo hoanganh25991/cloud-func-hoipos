@@ -1,3 +1,4 @@
 {
-  "hoiposEndpoint":"http://tinker.press"
+  "hoiPosEndpoint":"http://tinker.press",
+  "orderVersion":"3.1.4"
 }
