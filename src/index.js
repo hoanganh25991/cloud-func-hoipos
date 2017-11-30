@@ -1,12 +1,14 @@
 import axios from "axios"
 import config from "config.json"
+import { transform } from "./transform"
+
 const functions = require("firebase-functions")
 const admin = require("firebase-admin")
 
 // Config
 const _ = console.log
 axios.defaults.timeout = 2000
-const { hoiPosEndpoint, orderVersion } = config
+const { hoiPosEndpoint } = config
 admin.initializeApp(functions.config().firebase)
 
 /**
@@ -28,13 +30,14 @@ export const callUploadOrder = functions.database.ref("/tmp/{outletBr}/{orderBr}
 
   // Call hoipos-backend > uploadOrders API
   const orderData = event.data.val()
-  orderData.ver = orderVersion
   _("[orderData]", orderData)
   const outlet_id = +matchOutletBr[1]
 
+  const hoiposOrder = transform(orderData)
+
   const res = await axios.post(hoiPosEndpoint, {
-    type: "SAVE_ORDERS",
-    orders: [orderData],
+    type: "SAVE_ORDER",
+    order: hoiposOrder,
     outlet_id
   })
 
