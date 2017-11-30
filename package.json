@@ -19,7 +19,8 @@
     "precommit": "lint-staged",
     "test": "babel-node scripts/run-test",
     "build": "babel src --out-dir=functions && cp functions-file/* functions",
-    "deploy": "yarn build && cd functions && yarn deploy"
+    "deploy": "yarn build && cd functions && yarn deploy",
+    "deploy2": "babel-node scripts/deploy.js"
   },
   "lint-staged": {
     "*.js": [
