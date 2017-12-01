@@ -9,7 +9,7 @@ import defaultPkg from "defaultPkg.json"
 const _ = console.log
 const args = process.argv.slice(2)
 
-const run = ({ config, defaultPkg, dependencies }) => {
+const run = ({ config, defaultPkg, dependencies, args }) => {
   const projectName = args[0] || "hoidev"
   const projectId = Object.keys(config).filter(key => {
     const project = config[key]
@@ -44,7 +44,7 @@ const run = ({ config, defaultPkg, dependencies }) => {
 }
 
 try {
-  run({ config, defaultPkg, dependencies })
+  run({ config, defaultPkg, dependencies, args })
 } catch (err) {
   _("[run ERR]", err)
 }
