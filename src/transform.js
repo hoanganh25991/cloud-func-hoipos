@@ -1,6 +1,3 @@
-import config from "config.json"
-const { orderVersion } = config
-
 export const transform = _order => {
   const {
     order,
@@ -11,6 +8,10 @@ export const transform = _order => {
     discounts = [],
     promotions = []
   } = _order
+
+  // Default ver: 0
+  const orderVersion = order.ver || 0
+
   return {
     ...order,
     ver: orderVersion,

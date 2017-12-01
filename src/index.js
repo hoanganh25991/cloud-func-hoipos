@@ -8,7 +8,7 @@ const admin = require("firebase-admin")
 // Config
 const _ = console.log
 axios.defaults.timeout = 2000
-const { hoiPosEndpoint } = config
+const { ordersApi } = config
 admin.initializeApp(functions.config().firebase)
 
 /**
@@ -16,13 +16,30 @@ admin.initializeApp(functions.config().firebase)
  * To save it to MySQl db
  * @type {*|CloudFunction<DeltaSnapshot>}
  */
-export const callUploadOrder = functions.database.ref("/tmp/{outletBr}/{orderBr}").onWrite(async event => {
-  _("[event data]", event.data.val())
+export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").onWrite(async event => {
+  if (!event.data.exists()) {
+    _("[event data]", "No data exist")
+    return null
+  }
+
+  // _("[event data]", event.data.val())
+  const fbCnf = functions.config().firebase
+  _("[fbCnf]", fbCnf)
+
+  const { projectId } = fbCnf
+  const projectCnf = config[projectId]
+
+  if (!projectId) {
+    _("[projectId]", `No cnf for ${projectId}`)
+    return null
+  }
+
+  const { endpoint } = projectCnf
 
   // Check if should handle event
   const { outletBr, orderBr } = event.params
-  _("[ouletId, orderBr]", outletBr, orderBr)
-  const matchOutletBr = outletBr.match(/^.+(\d+)_orders$/)
+  _("[outletBr, orderBr]", outletBr, orderBr)
+  const matchOutletBr = outletBr.match(/outlet_(\d+)_orders$/)
   const matchOrderX = orderBr.match(/^order_(\d+)/)
   const shouldHandle = matchOutletBr && matchOrderX && true
   _("[shouldHandle]", shouldHandle)
@@ -32,16 +49,22 @@ export const callUploadOrder = functions.database.ref("/tmp/{outletBr}/{orderBr}
   const orderData = event.data.val()
   _("[orderData]", orderData)
   const outlet_id = +matchOutletBr[1]
-
+  _("[outlet_id]", outlet_id)
   const hoiposOrder = transform(orderData)
+  _("[hoiposOrder]", hoiposOrder)
+  const postUrl = `${endpoint}/${ordersApi}`
+  _("[postUrl]", postUrl)
 
-  const res = await axios.post(hoiPosEndpoint, {
-    type: "SAVE_ORDER",
-    order: hoiposOrder,
-    outlet_id
-  })
-
-  _("[res.data]", res.data)
+  try {
+    const res = await axios.post(postUrl, {
+      type: "SAVE_ORDER",
+      order: hoiposOrder,
+      outlet_id
+    })
+    _("[res.data]", res.data)
+  } catch (err) {
+    _("[callApi ERR]", err)
+  }
 
   return null
 })
