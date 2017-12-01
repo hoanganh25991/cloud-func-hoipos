@@ -19,7 +19,8 @@
     "precommit": "lint-staged",
     "test": "babel-node scripts/run-test",
     "build": "babel src --out-dir=functions",
-    "deploy": "babel-node scripts/deploy.js"
+    "deploy": "babel-node scripts/deploy.js",
+    "readme": "babel-node scripts/readme.js"
   },
   "lint-staged": {
     "*.js": [

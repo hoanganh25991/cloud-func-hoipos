@@ -21,8 +21,7 @@ const run = ({ config, defaultPkg, dependencies }) => {
   if (!projectId) return
 
   _("[INFO] Copy config")
-  const configLog = cpr.execSync(`cp ${__dirname}/../src/config.json ${__dirname}/../functions`)
-  _(configLog.toString())
+  cpr.execSync(`cp ${__dirname}/../src/config.json ${__dirname}/../functions`)
 
   _("[INFO] Create pkg")
   const pkg = {
@@ -40,7 +39,7 @@ const run = ({ config, defaultPkg, dependencies }) => {
   _(buildLog.toString())
 
   _("[INFO] ChDir & Deploy")
-  const cmd = [`cd functions`, `yarn install`, `yarn deploy`]
+  const cmd = [`cd functions`, `yarn install`, `firebase use ${projectId} && firebase deploy --only functions`]
   const deployLog = cpr.execSync(cmd.join("&&"))
   _(deployLog.toString())
 }
