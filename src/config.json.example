@@ -1,0 +1,11 @@
+{
+  "<project-id>": {
+    "name":"hoiprod",
+    "endpoint":"<url>"
+  },
+  "<project-id>":{
+    "name":"hoidev",
+    "endpoint":"<url>"
+  },
+  "ordersApi":"orders"
+}
