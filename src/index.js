@@ -12,8 +12,7 @@ const { ordersApi } = config
 admin.initializeApp(functions.config().firebase)
 
 /**
- * Call save orders in hoipos backend
- * To save it to MySQl db
+ * Save order back into MySQL
  * @type {*|CloudFunction<DeltaSnapshot>}
  */
 export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").onWrite(async event => {
