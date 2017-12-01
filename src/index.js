@@ -18,41 +18,43 @@ admin.initializeApp(functions.config().firebase)
  */
 export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").onWrite(async event => {
   if (!event.data.exists()) {
-    _("[event data]", "No data exist")
+    _("[event data]", "No data exists")
     return null
   }
 
-  // _("[event data]", event.data.val())
-  const fbCnf = functions.config().firebase
-  _("[fbCnf]", fbCnf)
+  // Should handle event
+  const { outletBr, orderBr } = event.params
 
+  _("[outletBr]", outletBr)
+  _("[orderBr]", orderBr)
+
+  const matchOutletBr = outletBr.match(/outlet_(\d+)_orders/)
+  const matchOrderX = orderBr.match(/order_(\d+)/)
+  const shouldHandle = matchOutletBr && matchOrderX && true
+  if (!shouldHandle) return null
+
+  // Get fb admin cnf in .runtimeconfig.json
+  const fbCnf = functions.config().firebase
   const { projectId } = fbCnf
   const projectCnf = config[projectId]
 
-  if (!projectId) {
-    _("[projectId]", `No cnf for ${projectId}`)
-    return null
-  }
+  _("[fbCnf]", fbCnf)
+  _("[projectCnf]", projectCnf)
 
-  const { endpoint } = projectCnf
-
-  // Check if should handle event
-  const { outletBr, orderBr } = event.params
-  _("[outletBr, orderBr]", outletBr, orderBr)
-  const matchOutletBr = outletBr.match(/outlet_(\d+)_orders$/)
-  const matchOrderX = orderBr.match(/^order_(\d+)/)
-  const shouldHandle = matchOutletBr && matchOrderX && true
-  _("[shouldHandle]", shouldHandle)
-  if (!shouldHandle) return null
+  if (!projectCnf) return null
 
   // Call hoipos-backend > uploadOrders API
-  const orderData = event.data.val()
-  _("[orderData]", orderData)
   const outlet_id = +matchOutletBr[1]
-  _("[outlet_id]", outlet_id)
+  const order_id = +matchOrderX[1]
+  const orderData = event.data.val()
   const hoiposOrder = transform(orderData)
-  _("[hoiposOrder]", hoiposOrder)
+  const { endpoint } = projectCnf
   const postUrl = `${endpoint}/${ordersApi}`
+
+  _("[outlet_id]", outlet_id)
+  _("[order_id]", order_id)
+  _("[orderData]", orderData)
+  _("[hoiposOrder]", hoiposOrder)
   _("[postUrl]", postUrl)
 
   try {
@@ -61,7 +63,7 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
       order: hoiposOrder,
       outlet_id
     })
-    _("[res.data]", res.data)
+    _("[callApi res.data]", res.data)
   } catch (err) {
     _("[callApi ERR]", err)
   }
