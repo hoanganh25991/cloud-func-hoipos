@@ -20,17 +20,16 @@ const run = ({ config, defaultPkg, dependencies }) => {
   _(`[INFO] Project Id: ${projectId}`)
   if (!projectId) return
 
+  _(`[INFO] Make functions dir`)
+  const funcDir = `${__dirname}/../functions`
+  const funcDirExist = fs.existsSync(funcDir)
+  if (!funcDirExist) fs.mkdirSync(funcDir)
+
   _("[INFO] Copy config")
-  cpr.execSync(`cp ${__dirname}/../src/config.json ${__dirname}/../functions`)
+  cpr.execSync(`cp ${__dirname}/../src/config.json ${funcDir}`)
 
   _("[INFO] Create pkg")
-  const pkg = {
-    ...defaultPkg,
-    dependencies,
-    scripts: {
-      deploy: `firebase use ${projectId} && firebase deploy --only functions`
-    }
-  }
+  const pkg = { ...defaultPkg, dependencies }
   const pkgPath = `${__dirname}/../functions/package.json`
   fs.writeFileSync(pkgPath, JSON.stringify(pkg))
 
@@ -39,7 +38,7 @@ const run = ({ config, defaultPkg, dependencies }) => {
   _(buildLog.toString())
 
   _("[INFO] ChDir & Deploy")
-  const cmd = [`cd functions`, `yarn install`, `firebase use ${projectId} && firebase deploy --only functions`]
+  const cmd = [`cd ${funcDir}`, `yarn install`, `firebase use ${projectId} && firebase deploy --only functions`]
   const deployLog = cpr.execSync(cmd.join("&&"))
   _(deployLog.toString())
 }
