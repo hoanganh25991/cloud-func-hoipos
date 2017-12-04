@@ -7,7 +7,7 @@ const admin = require("firebase-admin")
 
 // Config
 const _ = console.log
-axios.defaults.timeout = 2000
+axios.defaults.timeout = 5000
 const { ordersApi } = config
 admin.initializeApp(functions.config().firebase)
 
@@ -73,16 +73,9 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
     })
 
     // Log result
-    callWait.then(res => _("[callApi res.data]", res.data)).catch(err => _("[callApi ERR]", err))
-    // const res = await axios.post(postUrl, {
-    //   type: "SAVE_ORDER",
-    //   order: hoiposOrder,
-    //   outlet_id
-    // })
-    // _("[callApi res.data]", res.data)
+    return callWait.then(res => _("[callApi]", "outlet_id|order_id|res.data", outlet_id, order_id, res.data))
   } catch (err) {
-    _("[callApi ERR]", err)
+    _("[callApi]", "ERR", err)
+    return null
   }
-
-  return null
 })
