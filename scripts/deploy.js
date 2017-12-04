@@ -10,6 +10,8 @@ const _ = console.log
 const args = process.argv.slice(2)
 
 const run = ({ config, defaultPkg, dependencies, args }) => {
+  _(`[INFO] Usage: yarn deploy [projectName]`)
+
   const projectName = args[0] || "hoidev"
   const projectId = Object.keys(config).filter(key => {
     const project = config[key]
@@ -17,6 +19,7 @@ const run = ({ config, defaultPkg, dependencies, args }) => {
     return project.name === projectName
   })[0]
 
+  _(`[INFO] Project name: ${projectName}`)
   _(`[INFO] Project Id: ${projectId}`)
   if (!projectId) return
 
