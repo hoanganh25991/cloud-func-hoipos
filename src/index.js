@@ -61,22 +61,18 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
   _("[hoiposOrder]", hoiposOrder)
   _("[postUrl]", postUrl)
 
-  const lastCall = callWait
-
-  lastCall.then(callData => _("[callApi]", callData)).catch(err => _("[callApi ERR]", err))
-
-  // Update callWait to this call
-  callWait = new Promise((resolve, reject) => {
-    const res = axios.post(postUrl, {
-      type: "SAVE_ORDER",
-      order: hoiposOrder,
-      outlet_id
-    })
-
-    res.then(res => resolve({ outlet_id, order_id, resData: res.data })).catch(err => reject(err))
-
+  // Call Api
+  const callApi = new Promise((reslv, rejct) => {
+    const res = axios.post(postUrl, { outlet_id, type: "SAVE_ORDER", order: hoiposOrder })
+    res.then(res => reslv({ outlet_id, order_id, resData: res.data })).catch(err => rejct(err))
     return res
   })
 
-  return lastCall
+  // Log lastCall data
+  const lastCall = callWait
+  lastCall.then(callData => _("[callApi]", callData)).catch(err => _("[callApi ERR]", err))
+
+  // Queue this call
+  callWait = lastCall.then(() => callApi).catch(() => callApi)
+  return callWait
 })
