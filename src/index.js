@@ -11,6 +11,11 @@ axios.defaults.timeout = 2000
 const { ordersApi } = config
 admin.initializeApp(functions.config().firebase)
 
+// Concurrency save on order > conflict in MYSQL Insert
+// Store global promise of calling save
+// To queue it
+let callWait = Promise.resolve()
+
 /**
  * Save order back into MySQL
  * @type {*|CloudFunction<DeltaSnapshot>}
@@ -57,12 +62,24 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
   _("[postUrl]", postUrl)
 
   try {
-    const res = await axios.post(postUrl, {
+    // Wait for last call
+    await callWait
+
+    // Update callWait to this call
+    callWait = axios.post(postUrl, {
       type: "SAVE_ORDER",
       order: hoiposOrder,
       outlet_id
     })
-    _("[callApi res.data]", res.data)
+
+    // Log result
+    callWait.then(res => _("[callApi res.data]", res.data)).catch(err => _("[callApi ERR]", err))
+    // const res = await axios.post(postUrl, {
+    //   type: "SAVE_ORDER",
+    //   order: hoiposOrder,
+    //   outlet_id
+    // })
+    // _("[callApi res.data]", res.data)
   } catch (err) {
     _("[callApi ERR]", err)
   }
