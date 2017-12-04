@@ -20,7 +20,7 @@ let callWait = Promise.resolve()
  * Save order back into MySQL
  * @type {*|CloudFunction<DeltaSnapshot>}
  */
-export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").onWrite(async event => {
+export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").onWrite(event => {
   if (!event.data.exists()) {
     _("[event data]", "No data exists")
     return null
@@ -61,21 +61,22 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
   _("[hoiposOrder]", hoiposOrder)
   _("[postUrl]", postUrl)
 
-  try {
-    // Wait for last call
-    await callWait
+  const lastCall = callWait
 
-    // Update callWait to this call
-    callWait = axios.post(postUrl, {
+  lastCall.then(callData => _("[callApi]", callData)).catch(err => _("[callApi ERR]", err))
+
+  // Update callWait to this call
+  callWait = new Promise((resolve, reject) => {
+    const res = axios.post(postUrl, {
       type: "SAVE_ORDER",
       order: hoiposOrder,
       outlet_id
     })
 
-    // Log result
-    return callWait.then(res => _("[callApi]", "outlet_id|order_id|res.data", outlet_id, order_id, res.data))
-  } catch (err) {
-    _("[callApi]", "ERR", err)
-    return null
-  }
+    res.then(res => resolve({ outlet_id, order_id, resData: res.data })).catch(err => reject(err))
+
+    return res
+  })
+
+  return lastCall
 })
