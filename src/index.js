@@ -1,6 +1,7 @@
 import axios from "axios"
 import config from "config.json"
 import { transform } from "./transform"
+import { callSaveOrder } from "./api"
 
 const functions = require("firebase-functions")
 const admin = require("firebase-admin")
@@ -62,17 +63,11 @@ export const callUploadOrder = functions.database.ref("/{outletBr}/{orderBr}").o
   _("[postUrl]", postUrl)
 
   // Call Api
-  const callApi = new Promise((reslv, rejct) => {
-    const res = axios.post(postUrl, { outlet_id, type: "SAVE_ORDER", order: hoiposOrder })
-    res.then(res => reslv({ outlet_id, order_id, resData: res.data })).catch(err => rejct(err))
-    return res
-  })
-
   // Log lastCall data
-  const lastCall = callWait
-  lastCall.then(callData => _("[callApi]", callData)).catch(err => _("[callApi ERR]", err))
-
   // Queue this call
-  callWait = lastCall.then(() => callApi).catch(() => callApi)
+  const lastCall = callWait
+  const callSaveOrder = callSaveOrder({ outlet_id, order_id, hoiposOrder, postUrl })
+  lastCall.then(callData => _("[callSaveOrder]", callData)).catch(err => _("[callSaveOrder ERR]", err))
+  callWait = lastCall.then(() => callSaveOrder).catch(() => callSaveOrder)
   return callWait
 })
